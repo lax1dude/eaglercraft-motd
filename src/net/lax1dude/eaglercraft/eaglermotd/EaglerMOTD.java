@@ -340,10 +340,12 @@ public class EaglerMOTD extends Plugin implements Listener {
 	public void onMOTD(WebsocketMOTDEvent evt) {
 		MOTDConnection con = new MOTDConnection(evt.getListener(), evt.getMOTD());
 		if(con.execute()) {
-			synchronized(motdConnections) {
-				while(motdConnections.size() >= max_total_sockets) {
-					MOTDConnection c = motdConnections.remove(0);
-					c.close();
+			if(max_total_sockets > 0) {
+				synchronized(motdConnections) {
+					while(motdConnections.size() >= max_total_sockets) {
+						MOTDConnection c = motdConnections.remove(motdConnections.size() - 1);
+						c.close();
+					}
 				}
 			}
 			InetAddress addr = con.motd.getRemoteAddress();
@@ -356,22 +358,24 @@ public class EaglerMOTD extends Plugin implements Listener {
 			}
 			if(flag) {
 				synchronized(motdConnections) {
-					motdConnections.add(con);
+					motdConnections.add(0, con);
 				}
 			}else {
 				if(allow_banned_ips || !BanList.checkIpBanned(addr).isBanned()) {
 					synchronized(motdConnections) {
-						int i = 0;
-						int c = 0;
-						while(i < motdConnections.size()) {
-							if(motdConnections.get(i).motd.getRemoteAddress().equals(addr)) {
-								++c;
-								if(c >= max_sockets_per_ip) {
-									motdConnections.remove(i).close();
-									--i;
+						if(max_sockets_per_ip > 0) {
+							int i = 0;
+							int c = 0;
+							while(i < motdConnections.size()) {
+								if(motdConnections.get(i).motd.getRemoteAddress().equals(addr)) {
+									++c;
+									if(c >= max_sockets_per_ip) {
+										motdConnections.remove(i).close();
+										--i;
+									}
 								}
+								++i;
 							}
-							++i;
 						}
 						motdConnections.add(0, con);
 					}
