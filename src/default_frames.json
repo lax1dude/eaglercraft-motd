@@ -1,0 +1,42 @@
+{
+	"frame1": { 
+		"icon": "server-animation.png",
+		"icon_spriteX": 0,
+		"icon_spriteY": 0,
+		"online": "default",
+		"max": "default",
+		"players": "default",
+		"text0": "&6An Eaglercraft server",
+		"text1": "&7Running EaglerMOTD plugin"
+	},
+	"frame2": { 
+		"icon": "server-animation.png",
+		"icon_spriteX": 1,
+		"icon_spriteY": 0,
+		"icon_color": [ 1.0, 0.0, 0.0, 0.2 ],
+		"online": 10,
+		"players": [ "fake player 1", "fake player 2" ],
+		"text0": "&bAn &6Eaglercraft server"
+	},
+	"frame3": { 
+		"icon": "server-animation.png",
+		"icon_spriteX": 2,
+		"icon_spriteY": 0,
+		"icon_tint": [ 0.6, 0.6, 1.0, 0.8 ],
+		"online": 20,
+		"players": [],
+		"text0": "&6An &bEaglercraft &6server"
+	},
+	"frame4": { 
+		"icon": "server-animation.png",
+		"icon_spriteX": 3,
+		"icon_spriteY": 0,
+		"icon_color": [ 1.0, 1.0, 0.0, 0.2 ],
+		"icon_tint": [ 0.5, 0.5, 1.0 ],
+		"online": 30,
+		"max": 69,
+		"players": "default",
+		"text0": "&6An Eaglercraft &bserver",
+		"text1": "&7Running &k&oEaglerMOTD&r&7 plugin"
+	}
+}
