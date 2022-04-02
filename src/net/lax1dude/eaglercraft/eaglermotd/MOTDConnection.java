@@ -117,7 +117,12 @@ public class MOTDConnection {
 				currentFrame = currentMessage.random ? rand.nextInt(currentMessage.frames.size()) : 0;
 				applyFrame(currentMessage.frames.get(currentFrame));
 				motd.sendToUser();
-				return true;
+				if(currentMessage.next == null && currentMessage.interval <= 0) {
+					motd.close();
+					return false;
+				}else {
+					return true;
+				}
 			}else {
 				this.motd.close();
 				return false;
@@ -143,7 +148,12 @@ public class MOTDConnection {
 					motd.sendToUser();
 				}
 			}
-			return true;
+			if(currentMessage.next == null && currentMessage.interval <= 0) {
+				motd.close();
+				return false;
+			}else {
+				return true;
+			}
 		}
 	}
 	

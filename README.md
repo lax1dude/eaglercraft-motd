@@ -1,3 +1,5 @@
+### THIS IS A BUNGEE PLUGIN! Install in 'bungee_command/plugins' not 'bukkit_command/plugins'
+
 # EaglerMOTD
 
 ### This plugin can add animated MOTDs to your Eaglercraft server
