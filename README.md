@@ -237,7 +237,7 @@ Then, you must define **one** of:
 - `string` A string to send as `"data"` in the response
 
 Optionally, you can define:
-- `file` A path to an adittional binary file (relative to your EaglercraftBungee folder) to send as a binary WebSocket packet after sending the first JSON response containing the `"data"` from the required `json`, `txt`, or `string` value. This file is also reloaded automatically
+- `file` A path to an additional binary file (relative to your EaglercraftBungee folder) to send as a binary WebSocket packet after sending the first JSON response containing the `"data"` from the required `json`, `txt`, or `string` value. This file is also reloaded automatically
 
 **Use** `motd-reload` **to reload queries.json**
 
