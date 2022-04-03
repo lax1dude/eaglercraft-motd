@@ -133,7 +133,7 @@ You will find a new 'EaglerMOTD' folder in the plugins folder you put the jar in
 
 - `players` *(Optional)* Changes the list of players shown when the mouse is hovering over the online/max count in the multiplayer screen. use `"default"` to reset it and show the real list of players instead of spoofing it
 
-- `icon` *(Optional)* A JPEG/PNG/BMP/GIF to display as the server icon. The icon must be at least 64x64 pixels. **Transparency is supported.** The top left 64x64 pixels of the image are displayed if the image is larger than 64x64 pixels. **Animated GIF files are not supported, they load but only display the first frame.** Setting the icon resets the values of `icon_spriteX`, `icon_spriteY`, `icon_color`, `icon_tint`, `icon_flipX`, `icon_flipY`, and `icon_rotate` **to their default values.** Setting to `"none"` will reset everything and set the icon to be black and 100% transparent
+- `icon` *(Optional)* A JPEG/PNG/BMP/GIF to display as the server icon. The icon must be at least 64x64 pixels. **Transparency is supported.** The top left 64x64 pixels of the image are displayed if the image is larger than 64x64 pixels. **Animated GIF files are not supported, they load but only display the first frame.** Setting the icon resets the values of `icon_spriteX`, `icon_spriteY`, `icon_color`, `icon_tint`, `icon_flipX`, `icon_flipY`, and `icon_rotate` **to their default values.** Setting to `"none"` will reset everything and set the icon to be black and 100% transparent. **The icon's file name is relative to the folder EaglercraftBungee is currently running in**, not the folder where the JSON file is stored.
 
     - `icon_spriteX` *(Optional)* defines the X coordinate to read a 64x64 pixel portion of the current `"icon"` file, if the file is larger than 64x64. The value is multiplied by 64 to get the exact pixel coordinate in the image to read from. `"icon_spriteX": 2` will read a 64x64 pixel portion of a larger image beginning at 128 pixels X and 0 pixels Y of the current `"icon"` file. Default is 0
     - `icon_spriteY` *(Optional)* defines the Y coordinate to read a 64x64 pixel portion of the current `"icon"` file, if the file is larger than 64x64. The value is multiplied by 64 to get the exact pixel coordinate in the image to read from. `"icon_spriteY": 2` will read a 64x64 pixel portion of a larger image beginning at 0 pixels X and 128 pixels Y of the current `"icon"` file. Default is 0. Setting, for example, `"icon_spriteX": 1` and `"icon_spriteY": 2` will read a 64x64 pixel portion of the current `"icon"` file beginning at 64 pixels X and 128 pixels Y.
@@ -150,6 +150,96 @@ You will find a new 'EaglerMOTD' folder in the plugins folder you put the jar in
     - `icon_flipY` *(Optional)* flips the pixels of the icon displayed vertically
  
     - `icon_rotate` *(Optional)* rotates the icon 90&deg;, 180&deg;, or 270&deg; clockwise (`0` = 0&deg;, `1` = 90&deg;, `2` = 180&deg;, `3` = 270&deg;)
+
+### Queries.json:
+
+**This has nothing to do with MOTD, skip this part if you're just trying to add an animated MOTD**
+
+**This file allows you to configure custom** `Accept:` **handlers to EaglercraftBungee to provide more custom statistics to 3rd party server lists and crawlers**
+
+```json
+{
+	"queries": { 
+		"ExampleQuery1": { 
+			"type": "ExampleQuery1_result",
+			"string": "This is a string"
+		},
+		"ExampleQuery2": { 
+			"type": "ExampleQuery2_result",
+			"txt": "query2.txt"
+		},
+		"ExampleQuery3": { 
+			"type": "ExampleQuery3_result",
+			"string": "This query returns binary",
+			"file": "binary.dat"
+		},
+		"ExampleQuery4": { 
+			"type": "ExampleQuery4_result",
+			"json": "query4.json"
+		},
+		"ExampleQuery5": { 
+			"type": "ExampleQuery5_result",
+			"json": {
+				"key1": "value1",
+				"key2": "value2"
+			}
+		},
+		"ExampleQuery6": { 
+			"type": "ExampleQuery6_result",
+			"json": {
+				"desc": "This query returns JSON and a file",
+				"filename": "test_file.dat",
+				"size": 69
+			},
+			"file": "test_file.dat"
+		}
+	}
+}
+```
+
+`"queries"` contains a JSON object, each variable in this JSON object is the name of a query and the value is a JSON object containing the type of response and the content of the `"data"` value in the response
+
+**Here is an example of a server's response to a generic query:**
+
+```json
+{
+	"type": "<type here>",
+	"data": "<data here>",
+	"vers": "0.1.0",
+	"name": "EaglercraftBungee Server",
+	"time": 1648946954405,
+	"brand": "Eagtek",
+	"cracked": true
+}
+```
+
+`"type"` **is just a generic string you can set to hint to the client what kind of response you are sending, and** `"data"` **stores the actually data of the response, and can be either a string or JSON object**
+
+**Binary WebSocket packets can also be sent to a client, their format can be completely arbitrary and arrive containing the same raw unformatted data that was sent. They accompany a regular JSON response, the** `"type"` **and/or** `"data"` **value of the JSON response can be used to hint to the client when a raw binary packet is present**
+
+The `"vers"`, `"name"`, `"time"`, `"brand"`, and `"cracked"` values are added internally by the server and cannot be changed
+
+### Queries.json Format:
+
+The file contains a JSON object with a `"queries"` value which contains a map of keys matching `Accept:` types to JSON objects
+
+The JSON objects contain the `"type"` of response to send and what the `"data"` for that response should be. Also, a path to a binary file can be specified.
+
+**All files specified in queries.json are RELOADED AUTOMATICALLY when changes are detected.** This allows you to dynamically update the response for certain queries without `motd-reload` because you can just edit the file the query is configured to read and it will update the version cached in memory automatically.
+
+To add or edit an entry in queries.json, you need to define:
+- `type`, which determines the string in the `"type"` field of the response sent to the client
+
+Then, you must define **one** of:
+- `json` *(object)* A JSON object to send as `"data"` in the response
+- `json` *(string)* A path to a file (relative to your EaglercraftBungee folder) to parse as a JSON object and send as JSON as `"data"` in the response
+- `txt` A path to a text file (relative to your EaglercraftBungee folder) to send as a string as `"data"` in the response
+- `string` A string to send as `"data"` in the response
+
+Optionally, you can define:
+- `file` A path to an adittional binary file (relative to your EaglercraftBungee folder) to send as a binary WebSocket packet after sending the first JSON response containing the `"data"` from the required `json`, `txt`, or `string` value. This file is also reloaded automatically
+
+**Use** `motd-reload` **to reload queries.json**
 
 ## Compiling and Contributing
 
