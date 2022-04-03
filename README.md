@@ -4,7 +4,7 @@
 
 ### This plugin can add animated MOTDs to your Eaglercraft server
 
-![EaglerMOTD Sample](https://i.gyazo.com/ec23a9c60e9722209246fc2b2acea8e4.gif)
+![EaglerMOTD Sample](https://i.gyazo.com/4e0105720c866990c82b221fe82f7cc9.gif)
 
 **It can also add custom "Accept:" query handlers for 3rd party sites to gather more information about your server**
 
@@ -16,7 +16,140 @@ You will find a new 'EaglerMOTD' folder in the plugins folder you put the jar in
 
 ## Configuration Guide
 
-Just a minute...
+### Messages.json:
+
+```json
+{
+  "close_socket_after": 1200,
+  "max_sockets_per_ip": 10,
+  "max_total_sockets": 256,
+  "allow_banned_ips": false,
+  "messages": {
+    "all": [
+      {
+        "name": "default",
+        "frames": [ 
+          "frames.frame1",
+          "frames.frame2",
+          "frames.frame3",
+          "frames.frame4"
+        ],
+        "interval": 8,
+        "random": false,
+        "shuffle": false,
+        "timeout": 500,
+        "weight": 1.0,
+        "next": "any"
+      }
+    ]
+  }
+}
+```
+
+- `close_socket_after` Defines the maximum number of ticks (1/20ths of a second) that an animated MOTD should be displayed to a player (default 1200 ticks, which is 60 seconds)
+
+- `max_sockets_per_ip` Defines the maximum number of MOTD connections that a single IP address can open (does not apply to local IPs like 127.0.0.1 and 192.168.0.0 have no limit)
+
+- `max_total_sockets` Defines the maximum number of MOTD connections that can be open on the server at any given time
+
+- `allow_banned_ips` Defines if animated MOTDs should play for banned IPs
+
+- `messages` Defines the list of possible messages to display on every listener
+ 
+    - `all` Defines the list of possible messages to display on all listeners
+ 
+    - To define a list for a specific listener, type the hostname of the listener. The default host defined in a fresh default `config.yml` in EaglercraftBungee is `0.0.0.0:25565` so to define a list of messages for that specific listener you would use `"0.0.0.0:25565"` instead of `"all"` to add the messages. Messages defined as `"all"` will be added to the list of messages for all listeners.
+
+   - The list contains a set of JSON objects each containing these fields:
+        - `name` *(Optional)* Defines the name of the message, used for specifying a `next` property in a different message to jump to this message once it has timed out
+        - `frames` Defines a list of strings specifying the list of frames in the animation of this message. They are defined in `file.frame` format where `file` is the file the frame is located in (which would be `file.json`) and `frame` is the name of the frame in that file to use
+        - `interval` *(Optional)* defines the delay between frames. Setting to `0` (default) disables the animation and only shows the first frame
+        - `random` *(Optional)* defines if the animation should begin on a random frame (`true`) or the first frame (`false`, default)
+        - `shuffle` *(Optional)* defines if the animation should switch between frames sequentially (`false`, default) or randomly (`true`)
+        - `timeout` *(Optional)* defines how many ticks the animation should play before stopping or switching to `"next"` (default 500)
+        - `weight` *(Optional)* defines the random probability of choosing this message over any other messages in `"all"` and the list of messages for the specific listener the message is playing on. Default is 1.0
+        - `next` *(Optional)* defines the `"name"` of the message to play once this message times out (`timeout`). Set to `"any"` to pick any message, or set to `null` to stop the animation once `timeout` is reached. Default is null
+
+### Frames.json:
+
+**You can name this file anything you want, and you can create more than one. In 'messages.json' just define the frame as, for example, 'file.name' and it will look in a file called 'file.json' for a frame named 'name'. The example 'frames.frame1' in 'messages.json' will load 'frame1' from this default file called 'frames.json'**
+
+```json
+{
+	"frame1": { 
+		"icon": "server-animation.png",
+		"icon_spriteX": 0,
+		"icon_spriteY": 0,
+		"online": "default",
+		"max": "default",
+		"players": "default",
+		"text0": "&7An Eaglercraft server",
+		"text1": "&0!!!!&8Running EaglerMOTD plugin"
+	},
+	"frame2": { 
+		"icon": "server-animation.png",
+		"icon_spriteX": 1,
+		"icon_spriteY": 0,
+		"icon_color": [ 1.0, 0.0, 0.0, 0.15 ],
+		"online": 10,
+		"players": [ "fake player 1", "fake player 2" ],
+		"text0": "&6&nAn&r &7Eaglercraft server",
+		"text1": "&0!!&8!&0!&8Running EaglerMOTD plugin"
+	},
+	"frame3": { 
+		"icon": "server-animation.png",
+		"icon_spriteX": 2,
+		"icon_spriteY": 0,
+		"icon_color": [ 1.0, 0.0, 0.0, 0.15 ],
+		"icon_tint": [ 0.8, 0.8, 1.0 ],
+		"online": 20,
+		"players": [],
+		"text0": "&7An &6&nEaglercraft&r &7server",
+		"text1": "&0!&8!!&0!&8Running EaglerMOTD plugin"
+	},
+	"frame4": { 
+		"icon": "server-animation.png",
+		"icon_spriteX": 3,
+		"icon_spriteY": 0,
+		"icon_color": [ 1.0, 1.0, 0.0, 0.15 ],
+		"icon_tint": [ 0.8, 0.8, 1.0, 0.8 ],
+		"online": 30,
+		"players": "default",
+		"text0": "&7An Eaglercraft &6&nserver&r",
+		"text1": "&8!!!&0!&8Running EaglerMOTD plugin"
+	}
+}
+```
+
+**Every frame will retrieve the values from the previous frame in the message for the default value for every variable**
+
+- `text0` *(Optional)* Changes the first line of text in the server's current MOTD
+
+- `text1` *(Optional)* Changes the second line of text in the server's current MOTD
+
+- `online` *(Optional)* Changes the number of online players, use `"default"` to reset it
+
+- `max` *(Optional)* Changes the max number of players in the MOTD, use `"default"` to reset it
+
+- `players` *(Optional)* Changes the list of players shown when the mouse is hovering over the online/max count in the multiplayer screen. use `"default"` to reset it and show the real list of players instead of spoofing it
+
+- `icon` *(Optional)* A JPEG/PNG/BMP/GIF to display as the server icon. The icon must be at least 64x64 pixels. **Transparency is supported.** The top left 64x64 pixels of the image are displayed if the image is larger than 64x64 pixels. **Animated GIF files are not supported, they load but only display the first frame.** Setting the icon resets the values of `icon_spriteX`, `icon_spriteY`, `icon_color`, `icon_tint`, `icon_flipX`, `icon_flipY`, and `icon_rotate` **to their default values.** Setting to `"none"` will reset everything and set the icon to be black and 100% transparent
+
+    - `icon_spriteX` *(Optional)* defines the X coordinate to read a 64x64 pixel portion of the current `"icon"` file, if the file is larger than 64x64. The value is multiplied by 64 to get the exact pixel coordinate in the image to read from. `"icon_spriteX": 2` will read a 64x64 pixel portion of a larger image beginning at 128 pixels X and 0 pixels Y of the current `"icon"` file. Default is 0
+    - `icon_spriteY` *(Optional)* defines the Y coordinate to read a 64x64 pixel portion of the current `"icon"` file, if the file is larger than 64x64. The value is multiplied by 64 to get the exact pixel coordinate in the image to read from. `"icon_spriteY": 2` will read a 64x64 pixel portion of a larger image beginning at 0 pixels X and 128 pixels Y of the current `"icon"` file. Default is 0. Setting, for example, `"icon_spriteX": 1` and `"icon_spriteY": 2` will read a 64x64 pixel portion of the current `"icon"` file beginning at 64 pixels X and 128 pixels Y.
+
+    - `icon_pixelX` *(Optional)* defines the exact X pixel coordinate to read a 64x64 pixel portion of the current `"icon"` file, if the file is larger than 64x64. Unlike `icon_spriteX`, setting this value will not multiply the input value by 64, it will read from the exact coordinate in the image. **Overrides icon_spriteX**
+    - `icon_pixelY` *(Optional)* defines the exact Y pixel coordinate to read a 64x64 pixel portion of the current `"icon"` file, if the file is larger than 64x64. Unlike `icon_spriteY`, setting this value will not multiply the input value by 64, it will read from the exact coordinate in the image. **Overrides icon_spriteY**
+
+    - `icon_color` *(Optional)* mixes an RGBA color with the current `"icon"`, or displays the color directly if `"icon"` is `"none"`. `[1.0, 1.0, 1.0]` displays white, `[0.0, 0.0, 0.0]` displays black, `[0.0, 1.0, 0.0]` displays green, `[0.0, 1.0, 0.0, 0.5]` displays green with 50% transparency, blending it with the color of the current `"icon"` file's pixels if it is set.
+
+    - `icon_tint` *(Optional)* multiplies an RGBA color by all the pixels in the current `"icon"` and/or `"icon_color"`. `[0.0, 0.0, 1.0]` would make the icon's pixels blue-colored, `[1.0, 0.0, 0.0]` would make the icon's pixels red-colored, `[0.0, 1.0, 0.0, 0.5]` would make the icon's pixels green-colored and 50% transparent. `[2.0, 2.0, 2.0]` would double the brightness of the icon.
+
+    - `icon_flipX` *(Optional)* flips the pixels of the icon displayed horizontally
+ 
+    - `icon_flipY` *(Optional)* flips the pixels of the icon displayed vertically
+ 
+    - `icon_rotate` *(Optional)* rotates the icon 90&deg;, 180&deg;, or 270&deg; clockwise (`0` = 0&deg;, `1` = 90&deg;, `2` = 180&deg;, `3` = 270&deg;)
 
 ## Compiling and Contributing
 

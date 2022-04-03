@@ -29,6 +29,9 @@ public class MOTDConnection {
 	public BitmapFile bitmap = null;
 	public int spriteX = 0;
 	public int spriteY = 0;
+	public boolean flipX = false;
+	public boolean flipY = false;
+	public int rotate = 0;
 	public float[] color = new float[] { 0.0f, 0.0f, 0.0f, 0.0f };
 	public float[] tint = new float[] { 0.0f, 0.0f, 0.0f, 0.0f };
 	
@@ -158,6 +161,9 @@ public class MOTDConnection {
 	}
 	
 	private boolean changeMessageTo(String group, String s) {
+		if(group == null || s == null) {
+			return false;
+		}
 		List<MessagePoolEntry> lst = EaglerMOTD.messages.get(group);
 		if(lst == null) {
 			return false;
@@ -230,27 +236,63 @@ public class MOTDConnection {
 			shouldPush = true;
 		}
 		boolean shouldRenderIcon = false;
-		String icon = frame.optString("icon", null);
+		Object icon = frame.opt("icon");
 		if(icon != null) {
+			String asString = (icon instanceof String) ? (String)icon : null;
 			shouldRenderIcon = true;
-			if(icon.equalsIgnoreCase("none") || icon.equalsIgnoreCase("default") || icon.equalsIgnoreCase("null") || icon.equalsIgnoreCase("color")) {
+			if(icon == JSONObject.NULL || asString == null || asString.equalsIgnoreCase("none") || asString.equalsIgnoreCase("default")
+					|| asString.equalsIgnoreCase("null") || asString.equalsIgnoreCase("color")) {
 				bitmap = null;
 			}else {
-				bitmap = BitmapFile.getCachedIcon(icon);
+				bitmap = BitmapFile.getCachedIcon(asString);
 			}
-			spriteX = spriteY = 0;
+			spriteX = spriteY = rotate = 0;
+			flipX = flipY = false;
 			color = new float[] { 0.0f, 0.0f, 0.0f, 0.0f };
 			tint = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
 		}
-		int sprtX = frame.optInt("icon_spriteX", -1);
+		int sprtX = frame.optInt("icon_spriteX", -1) * 64;
 		if(sprtX >= 0 && sprtX != spriteX) {
 			shouldRenderIcon = true;
 			spriteX = sprtX;
 		}
-		int sprtY = frame.optInt("icon_spriteY", -1);
+		int sprtY = frame.optInt("icon_spriteY", -1) * 64;
 		if(sprtY >= 0 && sprtY != spriteY) {
 			shouldRenderIcon = true;
 			spriteY = sprtY;
+		}
+		sprtX = frame.optInt("icon_pixelX", -1);
+		if(sprtX >= 0 && sprtX != spriteX) {
+			shouldRenderIcon = true;
+			spriteX = sprtX;
+		}
+		sprtY = frame.optInt("icon_pixelY", -1);
+		if(sprtY >= 0 && sprtY != spriteY) {
+			shouldRenderIcon = true;
+			spriteY = sprtY;
+		}
+		Object flip = frame.opt("icon_flipX");
+		if(flip != null) {
+			shouldRenderIcon = true;
+			if(flip instanceof Boolean) {
+				flipX = ((Boolean)flip).booleanValue();
+			}else {
+				flipX = false;
+			}
+		}
+		flip = frame.opt("icon_flipY");
+		if(flip != null) {
+			shouldRenderIcon = true;
+			if(flip instanceof Boolean) {
+				flipY = ((Boolean)flip).booleanValue();
+			}else {
+				flipY = false;
+			}
+		}
+		int rot = frame.optInt("icon_rotate", -1);
+		if(rot >= 0) {
+			shouldRenderIcon = true;
+			rotate = rot % 4;
 		}
 		JSONArray colorF = frame.optJSONArray("icon_color");
 		if(colorF != null && colorF.length() > 0) {
@@ -271,7 +313,7 @@ public class MOTDConnection {
 		if(shouldRenderIcon) {
 			int[] newIcon = null;
 			if(bitmap != null) {
-				newIcon = bitmap.getSprite(sprtX, sprtY);
+				newIcon = bitmap.getSprite(spriteX, spriteY);
 			}
 			if(newIcon == null) {
 				newIcon = new int[64*64];
@@ -279,6 +321,17 @@ public class MOTDConnection {
 			newIcon = BitmapFile.applyTint(newIcon, tint[0], tint[1], tint[2], tint[3]);
 			if(color[3] > 0.0f) {
 				newIcon = BitmapFile.applyColor(newIcon, color[0], color[1], color[2], color[3]);
+			}
+			if(bitmap != null) {
+				if(flipX) {
+					newIcon = BitmapFile.flipX(newIcon);
+				}
+				if(flipY) {
+					newIcon = BitmapFile.flipY(newIcon);
+				}
+				if(rotate != 0) {
+					newIcon = BitmapFile.rotate(newIcon, rotate);
+				}
 			}
 			motd.setBitmap(newIcon);
 			shouldPush = true;
