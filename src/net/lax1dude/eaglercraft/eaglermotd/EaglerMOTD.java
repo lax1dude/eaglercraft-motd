@@ -338,6 +338,9 @@ public class EaglerMOTD extends Plugin implements Listener {
 	
 	@EventHandler
 	public void onMOTD(WebsocketMOTDEvent evt) {
+		if(!evt.getAccept().equalsIgnoreCase("motd") && !evt.getAccept().equalsIgnoreCase("motd.noicon")) {
+			return;
+		}
 		MOTDConnection con = new MOTDConnection(evt.getListener(), evt.getMOTD());
 		if(con.execute()) {
 			if(max_total_sockets > 0) {
